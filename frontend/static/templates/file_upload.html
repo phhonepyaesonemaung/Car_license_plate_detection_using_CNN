@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Parking System - Upload</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #1e40af;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-gray: #f8fafc;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+        body.sidebar-open {
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -var(--sidebar-width);
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, var(--dark-color) 0%, #374151 100%);
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1050;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .sidebar-header h4 {
+            color: white;
+            font-weight: 600;
+            margin: 0.5rem 0 0 0;
+        }
+
+        .sidebar-header .logo-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            margin: 0.25rem 0;
+        }
+
+        .sidebar a:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: white;
+            border-left-color: var(--primary-color);
+            padding-left: 2rem;
+        }
+
+        .sidebar a i {
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .closebtn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem !important;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .closebtn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fca5a5 !important;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.1) !important;
+            border-left-color: var(--danger-color) !important;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            z-index: 1040;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        /* Menu Button */
+        .openbtn {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 15px;
+            z-index: 1030;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            font-weight: 500;
+        }
+
+        .openbtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .openbtn i {
+            margin-right: 0.5rem;
+        }
+
+        /* Main Content */
+        .content {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .content.shifted {
+            margin-left: var(--sidebar-width);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 4rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        .page-header h2 {
+            color: var(--dark-color);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: #6b7280;
+            margin: 0;
+        }
+
+        /* Upload Cards */
+        .upload-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .upload-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.12);
+        }
+
+        .upload-card h4 {
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .upload-card h4 i {
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .entry-card h4 i {
+            color: var(--primary-color);
+        }
+
+        .exit-card h4 i {
+            color: var(--success-color);
+        }
+
+        /* File Input Styling */
+        .file-upload-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: var(--light-gray);
+            cursor: pointer;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary-color);
+            background: #eff6ff;
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--primary-color);
+            background: #eff6ff;
+            transform: scale(1.02);
+        }
+
+        .file-upload-area i {
+            font-size: 3rem;
+            color: #9ca3af;
+            margin-bottom: 1rem;
+        }
+
+        .file-upload-area p {
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .file-upload-area.has-file {
+            border-color: var(--success-color);
+            background: #f0fdf4;
+        }
+
+        .file-upload-area.has-file i {
+            color: var(--success-color);
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        /* Buttons */
+        .btn-upload {
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-upload:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-upload.btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-upload.btn-primary:hover {
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-upload.btn-success {
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-upload.btn-success:hover {
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Results */
+        .result-area {
+            margin-top: 1.5rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .result-area.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .alert {
+            border: none;
+            border-radius: 12px;
+            padding: 1.25rem;
+            border-left: 4px solid;
+            backdrop-filter: blur(5px);
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            color: var(--success-color);
+            border-left-color: var(--success-color);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6b7280;
+        }
+
+        .loading.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .content.shifted {
+                margin-left: var(--sidebar-width);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 1rem;
+            }
+            
+            .container {
+                padding-top: 2rem;
+            }
+            
+            .openbtn {
+                top: 1rem;
+                left: 1rem;
+                padding: 0.75rem;
+            }
+            
+            .upload-card {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .file-upload-area {
+                padding: 1.5rem;
+            }
+            
+            .file-upload-area i {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 100vw;
+                left: -100vw;
+            }
+            
+            .sidebar.active {
+                left: 0;
+            }
+            
+            .upload-card {
+                padding: 1rem;
+            }
+            
+            .file-upload-area {
+                padding: 1rem;
+            }
+        }
+
+        /* Minimal theme overrides */
+        body {
+            background: #f8fafc;
+        }
+        .page-header,
+        .upload-card,
+        .nav-card,
+        .search-card,
+        .logs-card,
+        .stat-card,
+        .card {
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+        .upload-card:hover,
+        .page-header:hover,
+        .card:hover,
+        .stat-card:hover,
+        .search-card:hover,
+        .logs-card:hover {
+            transform: none;
+            box-shadow: var(--shadow-sm);
+        }
+        .openbtn,
+        .btn-upload.btn-primary,
+        .btn-upload.btn-success,
+        .btn,
+        .btn-primary,
+        .btn-success,
+        .btn-warning,
+        .btn-danger,
+        .btn-info {
+            background: var(--primary-color) !important;
+            box-shadow: none !important;
+        }
+        .btn-upload.btn-success,
+        .btn-success { background: var(--success-color) !important; }
+        .btn-warning { background: var(--warning-color) !important; }
+        .btn-danger { background: var(--danger-color) !important; }
+        .btn-info { background: var(--info-color) !important; }
+        .btn:hover,
+        .btn:active {
+            transform: none;
+            box-shadow: none;
+        }
+        .file-upload-area,
+        .form-control {
+            background: #ffffff;
+        }
+        .file-upload-area:hover,
+        .file-upload-area.dragover,
+        .file-upload-area.has-file {
+            transform: none;
+            background: #ffffff;
+            border-color: var(--border-color);
+        }
+        .table tbody tr:hover {
+            transform: none;
+            background: var(--light-gray);
+        }
+        .dashboard-header,
+        .card-header {
+            background: var(--light-gray) !important;
+            color: var(--dark-color) !important;
+        }
+        .alert { backdrop-filter: none; }
+    </style>
+</head>
+<body>
+    <!-- Overlay -->
+    <div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+    
+    <!-- Sidebar Toggle Button -->
+    <button class="openbtn" id="openSidebarBtn" onclick="openSidebar()">
+        <i class="fas fa-bars"></i> Menu
+    </button>
+    
+    <!-- Sidebar -->
+    <div id="mySidebar" class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-car logo-icon"></i>
+            <h4>Parking System</h4>
+        </div>
+        <button class="closebtn" onclick="closeSidebar()">
+            <i class="fas fa-times"></i>
+        </button>
+        <a href="file_upload.html">
+            <i class="fas fa-upload"></i> Upload
+        </a>
+        <a href="logs.html">
+            <i class="fas fa-clipboard-list"></i> Logs
+        </a>
+        <a href="login.html" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+    
+    <!-- Main Content -->
+    <div id="mainContent" class="content">
+        <div class="container">
+            <div class="page-header">
+                <h2>Car Parking Management</h2>
+                <p>Upload vehicle entry and exit images for automated processing</p>
+            </div>
+            
+            <!-- Entry Upload -->
+            <div class="upload-card entry-card">
+                <h4>
+                    <i class="fas fa-sign-in-alt"></i>
+                    Vehicle Entry
+                </h4>
+                <form id="entryForm" enctype="multipart/form-data">
+                    <div class="file-upload-wrapper">
+                        <div class="file-upload-area" onclick="document.getElementById('entryFile').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p><strong>Click to upload</strong> or drag and drop<br>
+                            <small>Supported formats: JPG, PNG, GIF (Max 5MB)</small></p>
+                            <input type="file" name="image" id="entryFile" class="file-input" required accept="image/*">
+                        </div>
+                    </div>
+                    <button class="btn btn-upload btn-primary w-100" type="submit">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Process Entry
+                    </button>
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Processing image...
+                    </div>
+                </form>
+                <div id="entryResult" class="result-area"></div>
+            </div>
+            
+            <!-- Exit Upload -->
+            <div class="upload-card exit-card">
+                <h4>
+                    <i class="fas fa-sign-out-alt"></i>
+                    Vehicle Exit
+                </h4>
+                <form id="exitForm" enctype="multipart/form-data">
+                    <div class="file-upload-wrapper">
+                        <div class="file-upload-area" onclick="document.getElementById('exitFile').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p><strong>Click to upload</strong> or drag and drop<br>
+                            <small>Supported formats: JPG, PNG, GIF (Max 5MB)</small></p>
+                            <input type="file" name="image" id="exitFile" class="file-input" required accept="image/*">
+                        </div>
+                    </div>
+                    <button class="btn btn-upload btn-success w-100" type="submit">
+                        <i class="fas fa-sign-out-alt me-2"></i>
+                        Process Exit
+                    </button>
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Processing image...
+                    </div>
+                </form>
+                <div id="exitResult" class="result-area"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar Functions
+        let sidebarIsOpen = false;
+        function openSidebar() {
+            if (sidebarIsOpen) return;
+            document.getElementById("mySidebar").classList.add("active");
+            document.getElementById("overlay").style.display = "block";
+            document.getElementById("openSidebarBtn").style.display = "none";
+            document.getElementById("mainContent").classList.add("shifted");
+            document.body.classList.add('sidebar-open');
+            sidebarIsOpen = true;
+        }
+
+        function closeSidebar() {
+            if (!sidebarIsOpen) return;
+            document.getElementById("mySidebar").classList.remove("active");
+            document.getElementById("overlay").style.display = "none";
+            document.getElementById("openSidebarBtn").style.display = "block";
+            document.getElementById("mainContent").classList.remove("shifted");
+            document.body.classList.remove('sidebar-open');
+            sidebarIsOpen = false;
+        }
+
+        // Close sidebar when clicking a link inside it
+        Array.from(document.querySelectorAll('#mySidebar a')).forEach(link => {
+            link.addEventListener('click', () => closeSidebar());
+        });
+
+        // File Upload Handling
+        function setupFileUpload(fileInputId, uploadAreaSelector) {
+            const fileInput = document.getElementById(fileInputId);
+            const uploadArea = document.querySelector(uploadAreaSelector);
+            
+            // File selection handler
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    uploadArea.classList.add('has-file');
+                    uploadArea.innerHTML = `
+                        <i class="fas fa-check-circle"></i>
+                        <p><strong>${file.name}</strong><br>
+                        <small>${(file.size / 1024 / 1024).toFixed(2)} MB</small></p>
+                    `;
+                }
+            });
+            
+            // Drag and drop handlers
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    fileInput.dispatchEvent(new Event('change'));
+                }
+            });
+        }
+
+        // Initialize file uploads
+        setupFileUpload('entryFile', '.entry-card .file-upload-area');
+        setupFileUpload('exitFile', '.exit-card .file-upload-area');
+
+        // Entry Upload Form Handler
+        document.getElementById("entryForm").onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const loading = form.querySelector('.loading');
+            const resultDiv = document.getElementById("entryResult");
+            
+            // Show loading state
+            submitBtn.style.display = 'none';
+            loading.classList.add('show');
+            
+            try {
+                let formData = new FormData(form);
+                let res = await fetch("/upload-entry", { 
+                    method: "POST", 
+                    body: formData 
+                });
+                
+                if (!res.ok) {
+                    throw new Error('Upload failed');
+                }
+                
+                let data = await res.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="alert alert-info">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-3"></i>
+                            <div>
+                                <strong>Entry Processed Successfully</strong><br>
+                                <span>License Plate: <strong>${data.plate}</strong></span><br>
+                                <span>Status: ${data.status}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                resultDiv.classList.add('show');
+                
+                // Reset form after success
+                setTimeout(() => {
+                    form.reset();
+                    document.querySelector('.entry-card .file-upload-area').classList.remove('has-file');
+                    document.querySelector('.entry-card .file-upload-area').innerHTML = `
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Click to upload</strong> or drag and drop<br>
+                        <small>Supported formats: JPG, PNG, GIF (Max 5MB)</small></p>
+                    `;
+                }, 3000);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle me-3"></i>
+                            <div>
+                                <strong>Upload Failed</strong><br>
+                                <span>${error.message}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                resultDiv.classList.add('show');
+            } finally {
+                // Reset button state
+                setTimeout(() => {
+                    submitBtn.style.display = 'block';
+                    loading.classList.remove('show');
+                }, 1000);
+            }
+        };
+
+        // Exit Upload Form Handler
+        document.getElementById("exitForm").onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const loading = form.querySelector('.loading');
+            const resultDiv = document.getElementById("exitResult");
+            
+            // Show loading state
+            submitBtn.style.display = 'none';
+            loading.classList.add('show');
+            
+            try {
+                let formData = new FormData(form);
+                let res = await fetch("/upload-exit", { 
+                    method: "POST", 
+                    body: formData 
+                });
+                
+                if (!res.ok) {
+                    throw new Error('Upload failed');
+                }
+                
+                let data = await res.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle me-3"></i>
+                            <div>
+                                <strong>Exit Processed Successfully</strong><br>
+                                <span>License Plate: <strong>${data.plate}</strong></span><br>
+                                <span>Duration: <strong>${data['duration(mins)']} minutes</strong></span><br>
+                                <span>Parking Fare: <strong>${data.fare}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                resultDiv.classList.add('show');
+                
+                // Reset form after success
+                setTimeout(() => {
+                    form.reset();
+                    document.querySelector('.exit-card .file-upload-area').classList.remove('has-file');
+                    document.querySelector('.exit-card .file-upload-area').innerHTML = `
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Click to upload</strong> or drag and drop<br>
+                        <small>Supported formats: JPG, PNG, GIF (Max 5MB)</small></p>
+                    `;
+                }, 3000);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle me-3"></i>
+                            <div>
+                                <strong>Upload Failed</strong><br>
+                                <span>${error.message}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                resultDiv.classList.add('show');
+            } finally {
+                // Reset button state
+                setTimeout(() => {
+                    submitBtn.style.display = 'block';
+                    loading.classList.remove('show');
+                }, 1000);
+            }
+        };
+
+        // Close sidebar on window resize for mobile
+        window.addEventListener('resize', function() {
+            if (window.innerWidth <= 1024) {
+                closeSidebar();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // ESC to close sidebar
+            if (e.key === 'Escape') {
+                closeSidebar();
+            }
+            // Ctrl/Cmd + M to toggle sidebar
+            if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+                e.preventDefault();
+                const sidebar = document.getElementById("mySidebar");
+                if (sidebar.classList.contains('active')) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

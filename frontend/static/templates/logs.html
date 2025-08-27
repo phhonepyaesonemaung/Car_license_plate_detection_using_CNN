@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Parking System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/style.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #1e40af;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #06b6d4;
+            --dark-color: #1f2937;
+            --light-gray: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+            color: var(--dark-color);
+        }
+
+        /* Header */
+        .dashboard-header {
+            background: var(--light-gray);
+            color: var(--dark-color);
+            padding: 1.5rem 0;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.5;
+        }
+
+        .dashboard-header .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .dashboard-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .dashboard-subtitle {
+            text-align: center;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        /* Navigation */
+        .nav-card {
+            background: white;
+            border-radius: 12px;
+            padding: 0.75rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-btn {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            color: var(--dark-color);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-btn:hover {
+            transform: none;
+            box-shadow: var(--shadow-sm);
+            color: var(--dark-color);
+        }
+
+        .nav-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Search Card */
+        .search-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: none;
+        }
+
+        .search-card:hover { transform: none; box-shadow: var(--shadow-sm); }
+
+        .search-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-header i {
+            font-size: 1.5rem;
+            color: var(--info-color);
+            margin-right: 1rem;
+        }
+
+        .search-header h4 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .search-input-group {
+            position: relative;
+        }
+
+        .search-input {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--light-gray);
+        }
+
+        .search-input:focus {
+            border-color: var(--info-color);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+            background: white;
+            outline: none;
+        }
+
+        .search-btn {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 1.25rem;
+            color: white;
+            font-weight: 600;
+            transition: none;
+            margin-top: 1rem;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(6, 182, 212, 0.3);
+        }
+
+        /* Stats Cards */
+        .stats-row {
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            transition: none;
+            border: 1px solid var(--border-color);
+            height: 100%;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card:hover { transform: none; box-shadow: var(--shadow-sm); }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card:nth-child(1) .stat-icon { color: var(--primary-color); }
+        .stat-card:nth-child(2) .stat-icon { color: var(--success-color); }
+        .stat-card:nth-child(3) .stat-icon { color: var(--warning-color); }
+        .stat-card:nth-child(4) .stat-icon { color: var(--danger-color); }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        /* Logs Table Card */
+        .logs-card {
+            background: white;
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .logs-header {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .logs-header h4 {
+            margin: 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .logs-header i {
+            margin-right: 1rem;
+            color: var(--primary-color);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: 600px;
+        }
+
+        .logs-table {
+            margin: 0;
+            border: none;
+        }
+
+        .logs-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logs-table th {
+            background: linear-gradient(135deg, var(--dark-color), #374151);
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .logs-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #f3f4f6;
+            vertical-align: middle;
+        }
+
+        .logs-table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .logs-table tbody tr:hover { background: var(--light-gray); transform: none; }
+
+        .plate-badge {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            background: #dcfce7;
+            color: var(--success-color);
+        }
+
+        .status-active {
+            background: #fef3c7;
+            color: var(--warning-color);
+        }
+
+        /* Search Results */
+        .search-result {
+            margin-top: 1.5rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .search-result.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .alert { border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; border-left: 4px solid; }
+
+        .alert-info {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            color: var(--info-color);
+            border-left-color: var(--info-color);
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            color: var(--warning-color);
+            border-left-color: var(--warning-color);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6b7280;
+            padding: 2rem;
+        }
+
+        .loading.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e5e7eb;
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-title {
+                font-size: 2rem;
+            }
+            
+            .search-card, .logs-card {
+                margin: 1rem;
+                padding: 1rem;
+            }
+            
+            .logs-header {
+                padding: 1rem;
+            }
+            
+            .nav-buttons {
+                justify-content: center;
+            }
+            
+            .nav-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .stat-card {
+                margin-bottom: 1rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .container-fluid {
+                padding: 0.5rem;
+            }
+            
+            .logs-table th,
+            .logs-table td {
+                padding: 0.5rem;
+                font-size: 0.85rem;
+            }
+            
+            .plate-badge {
+                font-size: 0.8rem;
+                padding: 0.25rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <h1 class="dashboard-title">
+                <i class="fas fa-chart-line me-3"></i>
+                Admin Dashboard
+            </h1>
+            <p class="dashboard-subtitle">Monitor and manage parking system operations</p>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Navigation -->
+        <div class="nav-card">
+            <div class="nav-buttons">
+                <a href="file_upload.html" class="nav-btn">
+                    <i class="fas fa-upload"></i> Upload
+                </a>
+                <a href="logs.html" class="nav-btn active">
+                    <i class="fas fa-clipboard-list"></i> Dashboard
+                </a>
+                <a href="login.html" class="nav-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row stats-row">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <i class="fas fa-car stat-icon"></i>
+                    <div class="stat-number" id="totalCars">-</div>
+                    <p class="stat-label">Total Vehicles</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <i class="fas fa-sign-in-alt stat-icon"></i>
+                    <div class="stat-number" id="activeCars">-</div>
+                    <p class="stat-label">Currently Parked</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <i class="fas fa-dollar-sign stat-icon"></i>
+                    <div class="stat-number" id="totalRevenue">-</div>
+                    <p class="stat-label">Total Revenue</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <i class="fas fa-clock stat-icon"></i>
+                    <div class="stat-number" id="avgDuration">-</div>
+                    <p class="stat-label">Avg Duration</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Card -->
+        <div class="search-card">
+            <div class="search-header">
+                <i class="fas fa-search"></i>
+                <h4>Search Vehicle Records</h4>
+            </div>
+            <div class="search-input-group">
+                <input type="text" id="searchPlate" class="form-control search-input" 
+                       placeholder="Enter license plate number (e.g., ABC-123)">
+                <button class="btn search-btn w-100" onclick="searchCar()">
+                    <i class="fas fa-search me-2"></i>Search Records
+                </button>
+            </div>
+            <div id="searchResult" class="search-result"></div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="logs-card">
+            <div class="logs-header">
+                <h4>
+                    <i class="fas fa-list-ul"></i>
+                    Parking Records
+                </h4>
+            </div>
+            <div class="table-container">
+                <div class="loading" id="tableLoading">
+                    <div class="spinner"></div>
+                    <span>Loading records...</span>
+                </div>
+                <table class="table logs-table">
+                    <thead>
+                        <tr>
+                            <th>License Plate</th>
+                            <th>Entry Time</th>
+                            <th>Exit Time</th>
+                            <th>Duration</th>
+                            <th>Fare</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTable">
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <i class="fas fa-inbox"></i>
+                    <h5>No records found</h5>
+                    <p>Start by uploading vehicle entry images</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allLogs = [];
+
+        // Load logs and update dashboard
+        async function loadLogs() {
+            const tableLoading = document.getElementById('tableLoading');
+            const logsTable = document.getElementById('logsTable');
+            const emptyState = document.getElementById('emptyState');
+            
+            tableLoading.classList.add('show');
+            
+            try {
+                let res = await fetch("/get-logs");
+                if (!res.ok) throw new Error('Failed to load logs');
+                
+                let data = await res.json();
+                allLogs = data;
+                
+                if (data.length === 0) {
+                    logsTable.innerHTML = '';
+                    emptyState.style.display = 'block';
+                    updateStats([]);
+                    return;
+                }
+                
+                emptyState.style.display = 'none';
+                displayLogs(data);
+                updateStats(data);
+                
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                logsTable.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Failed to load records
+                        </td>
+                    </tr>
+                `;
+            } finally {
+                tableLoading.classList.remove('show');
+            }
+        }
+
+        // Display logs in table
+        function displayLogs(logs) {
+            const logsTable = document.getElementById('logsTable');
+            
+            if (logs.length === 0) {
+                logsTable.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            <i class="fas fa-search me-2"></i>
+                            No matching records found
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const rows = logs.map(log => {
+                const isActive = !log.exit;
+                const statusClass = isActive ? 'status-active' : 'status-completed';
+                const statusText = isActive ? 'Parked' : 'Completed';
+                const statusIcon = isActive ? 'fas fa-clock' : 'fas fa-check-circle';
+                
+                return `
+                    <tr>
+                        <td>
+                            <span class="plate-badge">${log.plate || 'N/A'}</span>
+                        </td>
+                        <td>
+                            <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                            ${formatDateTime(log.entry) || '-'}
+                        </td>
+                        <td>
+                            ${log.exit ? 
+                                `<i class="fas fa-calendar-alt me-2 text-success"></i>${formatDateTime(log.exit)}` : 
+                                '<span class="text-muted">-</span>'
+                            }
+                        </td>
+                        <td>
+                            ${log.duration ? 
+                                `<i class="fas fa-clock me-2 text-info"></i>${log.duration}` : 
+                                '<span class="text-muted">-</span>'
+                            }
+                        </td>
+                        <td>
+                            ${log.fare ? 
+                                `<i class="fas fa-dollar-sign me-1 text-success"></i><strong>${log.fare}</strong>` : 
+                                '<span class="text-muted">-</span>'
+                            }
+                        </td>
+                        <td>
+                            <span class="status-badge ${statusClass}">
+                                <i class="${statusIcon} me-1"></i>
+                                ${statusText}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            logsTable.innerHTML = rows;
+        }
+
+        // Update dashboard statistics
+        function updateStats(logs) {
+            const totalCars = logs.length;
+            const activeCars = logs.filter(log => !log.exit).length;
+            const completedLogs = logs.filter(log => log.exit && log.fare);
+            
+            // Calculate total revenue
+            const totalRevenue = completedLogs.reduce((sum, log) => {
+                const fareNum = parseFloat(log.fare?.replace(/[^0-9.-]+/g, '') || 0);
+                return sum + fareNum;
+            }, 0);
+            
+            // Calculate average duration
+            const durations = completedLogs
+                .map(log => log['duration(mins)'] || log.duration)
+                .filter(d => d && !isNaN(parseFloat(d)))
+                .map(d => parseFloat(d));
+            
+            const avgDuration = durations.length > 0 
+                ? Math.round(durations.reduce((sum, d) => sum + d, 0) / durations.length)
+                : 0;
+            
+            // Update UI
+            document.getElementById('totalCars').textContent = totalCars;
+            document.getElementById('activeCars').textContent = activeCars;
+            document.getElementById('totalRevenue').textContent = totalRevenue > 0 ? `${totalRevenue.toFixed(2)}` : '$0.00';
+            document.getElementById('avgDuration').textContent = avgDuration > 0 ? `${avgDuration}m` : '0m';
+            
+            // Add animation to numbers
+            animateNumbers();
+        }
+
+        // Animate number counters
+        function animateNumbers() {
+            const counters = document.querySelectorAll('.stat-number');
+            counters.forEach(counter => {
+                counter.style.transform = 'scale(1.1)';
+                counter.style.transition = 'transform 0.3s ease';
+                setTimeout(() => {
+                    counter.style.transform = 'scale(1)';
+                }, 200);
+            });
+        }
+
+        // Search for specific car
+        async function searchCar() {
+            const plate = document.getElementById('searchPlate').value.trim();
+            const resultDiv = document.getElementById('searchResult');
+            
+            if (!plate) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Please enter a license plate number
+                    </div>
+                `;
+                resultDiv.classList.add('show');
+                return;
+            }
+            
+            try {
+                // Show loading
+                resultDiv.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center p-3">
+                        <div class="spinner me-2"></div>
+                        Searching for ${plate}...
+                    </div>
+                `;
+                resultDiv.classList.add('show');
+                
+                let res = await fetch(`/search-car?plate=${encodeURIComponent(plate)}`);
+                if (!res.ok) throw new Error('Search failed');
+                
+                let data = await res.json();
+                
+                if (data && (data.plate || data.length > 0)) {
+                    const searchResults = Array.isArray(data) ? data : [data];
+                    const resultsHtml = searchResults.map(result => `
+                        <div class="card mt-2">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <span class="plate-badge">${result.plate}</span>
+                                </h6>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Entry:</small><br>
+                                        <strong>${formatDateTime(result.entry) || 'N/A'}</strong>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Exit:</small><br>
+                                        <strong>${result.exit ? formatDateTime(result.exit) : 'Still parked'}</strong>
+                                    </div>
+                                </div>
+                                ${result.duration ? `
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            <small class="text-muted">Duration:</small><br>
+                                            <strong>${result.duration}</strong>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted">Fare:</small><br>
+                                            <strong>${result.fare || 'N/A'}</strong>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Found ${searchResults.length} record(s) for "${plate}"
+                        </div>
+                        ${resultsHtml}
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-search me-2"></i>
+                            No records found for license plate "${plate}"
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Search failed: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Format date and time
+        function formatDateTime(dateString) {
+            if (!dateString) return null;
+            
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return dateString; // Return original if invalid
+                
+                return date.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            } catch (error) {
+                return dateString; // Return original if formatting fails
+            }
+        }
+
+        // Search on Enter key
+        document.getElementById('searchPlate').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchCar();
+            }
+        });
+
+        // Auto-refresh functionality
+        let autoRefreshInterval;
+        
+        function startAutoRefresh() {
+            autoRefreshInterval = setInterval(() => {
+                loadLogs();
+            }, 30000); // Refresh every 30 seconds
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+        }
+
+        // Filter and sort functionality
+        function filterLogs(filter = 'all') {
+            let filteredLogs = [...allLogs];
+            
+            switch(filter) {
+                case 'active':
+                    filteredLogs = allLogs.filter(log => !log.exit);
+                    break;
+                case 'completed':
+                    filteredLogs = allLogs.filter(log => log.exit);
+                    break;
+                case 'today':
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    filteredLogs = allLogs.filter(log => {
+                        const entryDate = new Date(log.entry);
+                        return entryDate >= today;
+                    });
+                    break;
+            }
+            
+            displayLogs(filteredLogs);
+        }
+
+        // Add filter buttons (you can add this to the HTML if needed)
+        function addFilterControls() {
+            const logsHeader = document.querySelector('.logs-header');
+            const filterButtons = `
+                <div class="float-end">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-primary active" onclick="filterLogs('all')">All</button>
+                        <button type="button" class="btn btn-outline-warning" onclick="filterLogs('active')">Active</button>
+                        <button type="button" class="btn btn-outline-success" onclick="filterLogs('completed')">Completed</button>
+                        <button type="button" class="btn btn-outline-info" onclick="filterLogs('today')">Today</button>
+                    </div>
+                </div>
+            `;
+            
+            logsHeader.innerHTML += filterButtons;
+        }
+
+        // Handle visibility change to pause/resume auto-refresh
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else {
+                startAutoRefresh();
+                loadLogs(); // Refresh immediately when page becomes visible
+            }
+        });
+
+        // Handle window focus/blur
+        window.addEventListener('focus', function() {
+            loadLogs(); // Refresh when window gains focus
+        });
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLogs();
+            startAutoRefresh();
+            
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Ctrl/Cmd + R to refresh
+                if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                    e.preventDefault();
+                    loadLogs();
+                }
+                
+                // Ctrl/Cmd + F to focus search
+                if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                    e.preventDefault();
+                    document.getElementById('searchPlate').focus();
+                }
+            });
+            
+            // Add click animations to stat cards
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 150);
+                });
+            });
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            stopAutoRefresh();
+        });
+    </script>
+</body>
+</html>
+                
