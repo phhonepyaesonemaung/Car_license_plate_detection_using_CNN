@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Parking System - Upload</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #1e40af;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-gray: #f8fafc;
+z            --border-color: #e2e8f0;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-gray);
+            min-height: 100vh;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--dark-color) 0%, var(--secondary-color) 100%);
+            padding: 2.5rem 0;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .upload-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-card h4 {
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary-color);
+            background: #eff6ff;
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--primary-color);
+            background: #eff6ff;
+        }
+
+        .file-upload-area.has-file {
+            border-color: var(--success-color);
+            background: #f0fdf4;
+        }
+
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .btn-upload {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .btn-upload:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="container">
+            <div class="page-header text-center mb-4">
+                <h2>Vehicle Entry/Exit Management</h2>
+                <p>Upload vehicle images for entry and exit processing</p>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="upload-card entry-card">
+                        <h4><i class="fas fa-car-side"></i>Vehicle Entry</h4>
+                        <form id="entryForm">
+                            <div class="file-upload-wrapper mb-3">
+                                <div class="file-upload-area" id="entryUploadArea">
+                                    <i class="fas fa-cloud-upload-alt mb-3 fs-1"></i>
+                                    <p class="mb-0"><strong>Click to upload</strong> or drag and drop</p>
+                                    <input type="file" name="image" class="file-input" accept="image/*" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-upload btn-primary w-100" id="entrySubmitBtn">
+                                <i class="fas fa-upload"></i> Submit Entry
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="upload-card exit-card">
+                        <h4><i class="fas fa-sign-out-alt"></i>Vehicle Exit</h4>
+                        <form id="exitForm">
+                            <div class="file-upload-wrapper mb-3">
+                                <div class="file-upload-area" id="exitUploadArea">
+                                    <i class="fas fa-cloud-upload-alt mb-3 fs-1"></i>
+                                    <p class="mb-0"><strong>Click to upload</strong> or drag and drop</p>
+                                    <input type="file" name="image" class="file-input" accept="image/*" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-upload btn-success w-100" id="exitSubmitBtn">
+                                <i class="fas fa-upload"></i> Submit Exit
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const entryForm = document.getElementById('entryForm');
+        const exitForm = document.getElementById('exitForm');
+        const entryUploadArea = document.getElementById('entryUploadArea');
+        const exitUploadArea = document.getElementById('exitUploadArea');
+
+        // File upload area interactions
+        document.querySelectorAll('.file-input').forEach(input => {
+            const uploadArea = input.closest('.file-upload-area');
+
+            input.addEventListener('change', () => {
+                if (input.files.length > 0) {
+                    uploadArea.classList.add('has-file');
+                    uploadArea.querySelector('p').innerHTML = `<strong>${input.files[0].name}</strong>`;
+                } else {
+                    uploadArea.classList.remove('has-file');
+                    uploadArea.querySelector('p').innerHTML = '<strong>Click to upload</strong> or drag and drop';
+                }
+            });
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type.startsWith('image/')) {
+                    input.files = files;
+                    uploadArea.classList.add('has-file');
+                    uploadArea.querySelector('p').innerHTML = `<strong>${files[0].name}</strong>`;
+                }
+            });
+        });
+
+        // Form submission handlers
+        entryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(entryForm);
+            const submitBtn = document.getElementById('entrySubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+            try {
+                const response = await fetch('/upload-entry', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Vehicle entry recorded successfully!\nPlate: ' + result.plate);
+                    entryForm.reset();
+                    entryUploadArea.classList.remove('has-file');
+                    entryUploadArea.querySelector('p').innerHTML = '<strong>Click to upload</strong> or drag and drop';
+                } else {
+                    alert(result.error || 'Failed to process entry');
+                }
+            } catch (error) {
+                alert('Error uploading file. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-upload"></i> Submit Entry';
+            }
+        });
+
+        exitForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(exitForm);
+            const submitBtn = document.getElementById('exitSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+            try {
+                const response = await fetch('/upload-exit', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    alert(`Vehicle exit processed successfully!\nFare: $${result.fare}`);
+                    exitForm.reset();
+                    exitUploadArea.classList.remove('has-file');
+                    exitUploadArea.querySelector('p').innerHTML = '<strong>Click to upload</strong> or drag and drop';
+                } else {
+                    alert(result.error || 'Failed to process exit');
+                }
+            } catch (error) {
+                alert('Error uploading file. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-upload"></i> Submit Exit';
+            }
+        });
+    </script>
+</body>
+</html>
