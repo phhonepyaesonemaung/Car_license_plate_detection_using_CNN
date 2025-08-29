@@ -1,0 +1,19 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "special_project",
+            "database": "parking_db",
+            "username": "root",
+            "password": "ppsmisZzz23@!",
+            "connectionTimeout": 30
+        }
+    ]
+}
