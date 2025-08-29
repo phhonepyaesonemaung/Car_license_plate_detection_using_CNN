@@ -95,6 +95,50 @@ z            --border-color: #e2e8f0;
             opacity: 0.7;
             cursor: not-allowed;
         }
+
+
+        /* Navigation */
+        .nav-card {
+            background: white;
+            border-radius: 12px;
+            padding: 0.75rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-btn {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            color: var(--dark-color);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-btn:hover {
+            transform: none;
+            box-shadow: var(--shadow-sm);
+            color: var(--dark-color);
+        }
+
+        .nav-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
     </style>
 </head>
 <body>
@@ -104,6 +148,22 @@ z            --border-color: #e2e8f0;
                 <h2>Vehicle Entry/Exit Management</h2>
                 <p>Upload vehicle images for entry and exit processing</p>
             </div>
+
+                <div class="container-fluid">
+        <!-- Navigation -->
+        <div class="nav-card">
+            <div class="nav-buttons">
+                <a href="file_upload.html" class="nav-btn active">
+                    <i class="fas fa-upload"></i> Upload
+                </a>
+                <a href="logs.html" class="nav-btn">
+                    <i class="fas fa-clipboard-list"></i> Dashboard
+                </a>
+                <a href="login.html" class="nav-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
 
             <div class="row">
                 <div class="col-md-6">
