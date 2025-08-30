@@ -4,7 +4,7 @@ import requests
 BACKEND_URL = "http://localhost:5000/upload-entry"
 
 # Path to the test image (update this path to your test image)
-IMAGE_PATH = "test_plate.jpg"
+IMAGE_PATH = "1E.jpg"
 
 def test_upload_entry():
     with open(IMAGE_PATH, "rb") as img_file:

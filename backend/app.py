@@ -8,8 +8,6 @@ import uuid
 # Import ML plate recognition
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), 'model'))
-from LPD2 import recognize_plate_trocr, remove_white_border
-import cv2
 
 app = Flask(__name__, template_folder='../frontend/templates')
 
@@ -29,6 +27,10 @@ db_config = {
     'database': 'parking_db'
 }
 
+# Fare calculation constants
+BASE_FARE = 20
+RATE_PER_MIN = 1
+
 def get_db():
     try:
         return mysql.connector.connect(**db_config)
@@ -44,10 +46,6 @@ def mock_plate_recognition(image_path):
     """Mock function to simulate license plate recognition"""
     # For testing, always return the same plate so entry and exit match
     return "TEST-123"
-
-# Fare calculation constants
-BASE_FARE = 20
-RATE_PER_MIN = 1
 
 # Database initialization
 def init_db():
@@ -81,6 +79,19 @@ def init_db():
                 INDEX idx_plate (plate),
                 INDEX idx_entry_time (entry_time)
             )
+        """)
+        
+        # Create parking_stats view for dashboard
+        cursor.execute("""
+            CREATE OR REPLACE VIEW parking_stats AS
+            SELECT 
+                COUNT(*) as total_records,
+                SUM(CASE WHEN exit_time IS NULL THEN 1 ELSE 0 END) as active_parkings,
+                SUM(CASE WHEN exit_time IS NOT NULL THEN 1 ELSE 0 END) as completed_parkings,
+                COALESCE(SUM(fare), 0) as total_revenue,
+                COALESCE(AVG(TIMESTAMPDIFF(MINUTE, entry_time, exit_time)), 0) as avg_duration_minutes,
+                SUM(CASE WHEN DATE(entry_time) = CURDATE() THEN 1 ELSE 0 END) as today_entries
+            FROM parking_logs
         """)
         
         # Create default admin user if not exists
@@ -191,15 +202,10 @@ def upload_entry():
     except Exception as e:
         return jsonify({'error': 'Failed to save uploaded file. Please try again.'}), 500
 
-    # Run ML plate recognition
+    # Run ML plate recognition using process_image_file
     try:
-        img_cv = cv2.imread(file_path)
-        if img_cv is None:
-            return jsonify({'error': 'Failed to read uploaded image for plate recognition.'}), 422
-        # Remove white border (preprocessing)
-        plate_crop = remove_white_border(img_cv)
-        plate = recognize_plate_trocr(plate_crop)
-        plate = plate.strip()
+        from LPD2 import process_image_file
+        plate = process_image_file(file_path)
         if not plate:
             return jsonify({'error': 'Plate could not be detected.'}), 422
     except Exception as e:
@@ -227,6 +233,80 @@ def upload_entry():
         return jsonify({'error': 'Database error. Please try again later.'}), 503
     finally:
         db.close()
+
+# Vehicle exit endpoint
+@app.route('/upload-exit', methods=['POST'])
+def upload_exit():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image file was provided'}), 400
+
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'error': 'No file was selected'}), 400
+
+    if not allowed_file(file.filename):
+        return jsonify({'error': 'Invalid file type. Allowed types are: JPG, PNG, GIF'}), 400
+
+    try:
+        # Save uploaded file
+        filename = secure_filename(file.filename)
+        unique_filename = f"{uuid.uuid4()}_{filename}"
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+        file.save(file_path)
+    except Exception as e:
+        return jsonify({'error': 'Failed to save uploaded file. Please try again.'}), 500
+
+    # Run ML plate recognition using process_image_file
+    try:
+        from LPD2 import process_image_file
+        plate = process_image_file(file_path)
+        if not plate:
+            return jsonify({'error': 'Plate could not be detected.'}), 422
+    except Exception as e:
+        return jsonify({'error': f'Plate recognition error: {str(e)}'}), 422
+
+    exit_time = datetime.now()
+    db = get_db()
+    if not db:
+        return jsonify({'error': 'Database connection failed. Please try again later.'}), 503
+
+    try:
+        cursor = db.cursor(dictionary=True)
+        # Find the latest entry for this plate with no exit_time
+        cursor.execute("SELECT id, entry_time FROM parking_logs WHERE plate=%s AND exit_time IS NULL ORDER BY entry_time DESC LIMIT 1", (plate,))
+        log = cursor.fetchone()
+        if not log:
+            cursor.close()
+            db.close()
+            return jsonify({'error': 'No car found for this plate number.'}), 404
+
+        entry_time = log['entry_time']
+        duration_min = int((exit_time - entry_time).total_seconds() // 60)
+        fare = BASE_FARE + duration_min * RATE_PER_MIN
+
+        # Update log with exit_time and fare
+        cursor.execute("UPDATE parking_logs SET exit_time=%s, fare=%s WHERE id=%s", (exit_time, fare, log['id']))
+        db.commit()
+        cursor.close()
+        db.close()
+        return jsonify({
+            'plate': plate,
+            'status': 'Exit recorded successfully',
+            'timestamp': exit_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'duration_min': duration_min,
+            'fare': fare
+        })
+    except Exception as e:
+        return jsonify({'error': 'Database error. Please try again later.'}), 503
+    finally:
+        try:
+            if 'cursor' in locals():
+                cursor.close()
+            if 'db' in locals():
+                db.close()
+        except:
+            pass
+
 # Get dashboard statistics
 @app.route('/get-stats', methods=['GET'])
 def get_stats():
