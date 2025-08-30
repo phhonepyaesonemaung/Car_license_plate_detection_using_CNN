@@ -608,7 +608,26 @@
                 const statusClass = isActive ? 'status-active' : 'status-completed';
                 const statusText = isActive ? 'Parked' : 'Completed';
                 const statusIcon = isActive ? 'fas fa-clock' : 'fas fa-check-circle';
-                
+
+                // Show fare with MMK
+                let fareDisplay = '<span class="text-muted">-</span>';
+                if (log.fare) {
+                    let fareValue = log.fare.replace(/\$/g, '').replace(/MMK/g, '').trim();
+                    fareDisplay = `<i class="fas fa-money-bill me-1 text-success"></i><strong>${fareValue} MMK</strong>`;
+                }
+
+                // Format duration in hr and min
+                let durationDisplay = '<span class="text-muted">-</span>';
+                let durationStr = log['duration(mins)'] || log.duration;
+                if (durationStr && typeof durationStr === 'string') {
+                    let mins = parseInt(durationStr.replace(/[^0-9]/g, ''));
+                    if (!isNaN(mins)) {
+                        let hr = Math.floor(mins / 60);
+                        let min = mins % 60;
+                        durationDisplay = `<i class="fas fa-clock me-2 text-info"></i>${hr > 0 ? hr + 'h ' : ''}${min}m`;
+                    }
+                }
+
                 return `
                     <tr>
                         <td>
@@ -625,16 +644,10 @@
                             }
                         </td>
                         <td>
-                            ${log.duration ? 
-                                `<i class="fas fa-clock me-2 text-info"></i>${log.duration}` : 
-                                '<span class="text-muted">-</span>'
-                            }
+                            ${durationDisplay}
                         </td>
                         <td>
-                            ${log.fare ? 
-                                `<i class="fas fa-dollar-sign me-1 text-success"></i><strong>${log.fare}</strong>` : 
-                                '<span class="text-muted">-</span>'
-                            }
+                            ${fareDisplay}
                         </td>
                         <td>
                             <span class="status-badge ${statusClass}">
@@ -655,28 +668,35 @@
             const activeCars = logs.filter(log => !log.exit).length;
             const completedLogs = logs.filter(log => log.exit && log.fare);
             
-            // Calculate total revenue
+            // Calculate total revenue (MMK)
             const totalRevenue = completedLogs.reduce((sum, log) => {
-                const fareNum = parseFloat(log.fare?.replace(/[^0-9.-]+/g, '') || 0);
+                // Remove any $ sign and ensure MMK is counted
+                const fareNum = parseInt(log.fare?.replace(/[^0-9]/g, '') || 0);
                 return sum + fareNum;
             }, 0);
-            
+
             // Calculate average duration
             const durations = completedLogs
                 .map(log => log['duration(mins)'] || log.duration)
                 .filter(d => d && !isNaN(parseFloat(d)))
                 .map(d => parseFloat(d));
-            
-            const avgDuration = durations.length > 0 
-                ? Math.round(durations.reduce((sum, d) => sum + d, 0) / durations.length)
-                : 0;
-            
+
+            let avgDuration = 0;
+            if (durations.length > 0) {
+                avgDuration = Math.round(durations.reduce((sum, d) => sum + d, 0) / durations.length);
+            }
+
+            // Format average duration in hr and min
+            let avgHr = Math.floor(avgDuration / 60);
+            let avgMin = avgDuration % 60;
+            let avgDurationDisplay = avgDuration > 0 ? `${avgHr > 0 ? avgHr + 'h ' : ''}${avgMin}m` : '0m';
+
             // Update UI
             document.getElementById('totalCars').textContent = totalCars;
             document.getElementById('activeCars').textContent = activeCars;
-            document.getElementById('totalRevenue').textContent = totalRevenue > 0 ? `${totalRevenue.toFixed(2)}` : '$0.00';
-            document.getElementById('avgDuration').textContent = avgDuration > 0 ? `${avgDuration}m` : '0m';
-            
+            document.getElementById('totalRevenue').textContent = totalRevenue > 0 ? `${totalRevenue} MMK` : '0 MMK';
+            document.getElementById('avgDuration').textContent = avgDurationDisplay;
+
             // Add animation to numbers
             animateNumbers();
         }

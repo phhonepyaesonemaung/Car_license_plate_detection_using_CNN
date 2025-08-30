@@ -217,7 +217,16 @@ def upload_entry():
         return jsonify({'error': 'Database connection failed. Please try again later.'}), 503
 
     try:
-        cursor = db.cursor()
+        cursor = db.cursor(dictionary=True)
+        # Check for active parking log for this plate
+        cursor.execute("SELECT id FROM parking_logs WHERE plate=%s AND exit_time IS NULL", (plate,))
+        existing = cursor.fetchone()
+        if existing:
+            cursor.close()
+            db.close()
+            return jsonify({'error': 'This car is already parked and has not exited yet.'}), 409
+
+        # Insert new entry
         cursor.execute(
             "INSERT INTO parking_logs (plate, entry_time) VALUES (%s, %s)",
             (plate, entry_time)
@@ -282,7 +291,11 @@ def upload_exit():
 
         entry_time = log['entry_time']
         duration_min = int((exit_time - entry_time).total_seconds() // 60)
-        fare = BASE_FARE + duration_min * RATE_PER_MIN
+        # Fare logic: under 30 min is free, 30 min or more costs 1000 MMK
+        if duration_min < 30:
+            fare = 0
+        else:
+            fare = 1000
 
         # Update log with exit_time and fare
         cursor.execute("UPDATE parking_logs SET exit_time=%s, fare=%s WHERE id=%s", (exit_time, fare, log['id']))
@@ -294,7 +307,7 @@ def upload_exit():
             'status': 'Exit recorded successfully',
             'timestamp': exit_time.strftime('%Y-%m-%d %H:%M:%S'),
             'duration_min': duration_min,
-            'fare': fare
+            'fare': f'{fare} MMK'
         })
     except Exception as e:
         return jsonify({'error': 'Database error. Please try again later.'}), 503
@@ -360,12 +373,13 @@ def get_logs():
             formatted_log = {
                 'plate': log['plate'],
                 'entry': log['entry_time'].strftime('%Y-%m-%d %H:%M:%S') if log['entry_time'] else '-',
-                'exit': log['exit_time'].strftime('%Y-%m-%d %H:%M:%S') if log['exit_time'] else '-',
+                # For active parkings, set exit to null (not '-')
+                'exit': log['exit_time'].strftime('%Y-%m-%d %H:%M:%S') if log['exit_time'] else None,
                 'duration': f"{log['duration']} min" if log['duration'] else '-',
-                'fare': f"${log['fare']}" if log['fare'] else '-'
+                'fare': f"{log['fare']} MMK" if log['fare'] is not None else '-'
             }
             formatted_logs.append(formatted_log)
-        
+
         return jsonify(formatted_logs)
     
     except mysql.connector.Error as err:
