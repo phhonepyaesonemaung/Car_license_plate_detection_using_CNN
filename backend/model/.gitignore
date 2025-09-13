@@ -1,0 +1,29 @@
+# Conda and Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+crop_plate.py
+license_plate_detection.py
+efficientnet_chars.pth
+# Conda environments
+.conda/
+envs/
+lp_project/Lib/
+lp_project/Scripts/
+lp_project/include/
+lp_project/Lib/site-packages/
+
+# Model weights and training outputs
+*.pt
+*.h5
+runs/
+checkpoints/
+
+# IDE settings
+.vscode/
+.idea/
+.DS_Store
+
+#Images and Labels
+datasets/
