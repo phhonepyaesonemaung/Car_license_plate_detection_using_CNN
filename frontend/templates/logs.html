@@ -662,42 +662,37 @@
             logsTable.innerHTML = rows;
         }
 
-        // Update dashboard statistics
-        function updateStats(logs) {
+        // Update dashboard statistics using backend stats
+        async function updateStats(logs) {
+            // Fallbacks from logs for totalCars and activeCars
             const totalCars = logs.length;
             const activeCars = logs.filter(log => !log.exit).length;
-            const completedLogs = logs.filter(log => log.exit && log.fare);
-            
-            // Calculate total revenue (MMK)
-            const totalRevenue = completedLogs.reduce((sum, log) => {
-                // Remove any $ sign and ensure MMK is counted
-                const fareNum = parseInt(log.fare?.replace(/[^0-9]/g, '') || 0);
-                return sum + fareNum;
-            }, 0);
 
-            // Calculate average duration
-            const durations = completedLogs
-                .map(log => log['duration(mins)'] || log.duration)
-                .filter(d => d && !isNaN(parseFloat(d)))
-                .map(d => parseFloat(d));
-
-            let avgDuration = 0;
-            if (durations.length > 0) {
-                avgDuration = Math.round(durations.reduce((sum, d) => sum + d, 0) / durations.length);
+            // Fetch backend stats for revenue and avg duration
+            let totalRevenue = '-';
+            let avgDurationDisplay = '-';
+            try {
+                const res = await fetch('/get-stats');
+                if (res.ok) {
+                    const stats = await res.json();
+                    if (stats) {
+                        totalRevenue = stats.total_revenue ? `${stats.total_revenue} MMK` : '0.00 MMK';
+                        // Format avg duration
+                        let avgDuration = Math.round(stats.avg_duration_minutes || 0);
+                        let avgHr = Math.floor(avgDuration / 60);
+                        let avgMin = avgDuration % 60;
+                        avgDurationDisplay = avgDuration > 0 ? `${avgHr > 0 ? avgHr + 'h ' : ''}${avgMin}m` : '0m';
+                    }
+                }
+            } catch (e) {
+                // fallback: leave as '-'
             }
 
-            // Format average duration in hr and min
-            let avgHr = Math.floor(avgDuration / 60);
-            let avgMin = avgDuration % 60;
-            let avgDurationDisplay = avgDuration > 0 ? `${avgHr > 0 ? avgHr + 'h ' : ''}${avgMin}m` : '0m';
-
-            // Update UI
             document.getElementById('totalCars').textContent = totalCars;
             document.getElementById('activeCars').textContent = activeCars;
-            document.getElementById('totalRevenue').textContent = totalRevenue > 0 ? `${totalRevenue} MMK` : '0 MMK';
+            document.getElementById('totalRevenue').textContent = totalRevenue;
             document.getElementById('avgDuration').textContent = avgDurationDisplay;
 
-            // Add animation to numbers
             animateNumbers();
         }
 

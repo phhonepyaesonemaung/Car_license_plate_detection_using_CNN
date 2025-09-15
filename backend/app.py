@@ -81,14 +81,14 @@ def init_db():
             )
         """)
         
-        # Create parking_stats view for dashboard
+        # Create parking_stats view for dashboard (ignore fares above 1000 for total_revenue)
         cursor.execute("""
             CREATE OR REPLACE VIEW parking_stats AS
             SELECT 
                 COUNT(*) as total_records,
                 SUM(CASE WHEN exit_time IS NULL THEN 1 ELSE 0 END) as active_parkings,
                 SUM(CASE WHEN exit_time IS NOT NULL THEN 1 ELSE 0 END) as completed_parkings,
-                COALESCE(SUM(fare), 0) as total_revenue,
+                COALESCE(SUM(CASE WHEN fare <= 1000 THEN fare ELSE 0 END), 0) as total_revenue,
                 COALESCE(AVG(TIMESTAMPDIFF(MINUTE, entry_time, exit_time)), 0) as avg_duration_minutes,
                 SUM(CASE WHEN DATE(entry_time) = CURDATE() THEN 1 ELSE 0 END) as today_entries
             FROM parking_logs
@@ -328,17 +328,26 @@ def get_stats():
         return jsonify({'error': 'Database connection error'}), 500
     try:
         cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM parking_stats")
+        # Custom query to ignore fares above 1000 for total_revenue
+        cursor.execute("""
+            SELECT 
+                COUNT(*) as total_records,
+                SUM(CASE WHEN exit_time IS NULL THEN 1 ELSE 0 END) as active_parkings,
+                SUM(CASE WHEN exit_time IS NOT NULL THEN 1 ELSE 0 END) as completed_parkings,
+                COALESCE(SUM(CASE WHEN fare <= 1000 THEN fare ELSE 0 END), 0) as total_revenue,
+                COALESCE(AVG(TIMESTAMPDIFF(MINUTE, entry_time, exit_time)), 0) as avg_duration_minutes,
+                SUM(CASE WHEN DATE(entry_time) = CURDATE() THEN 1 ELSE 0 END) as today_entries
+            FROM parking_logs
+        """)
         stats = cursor.fetchone()
         cursor.close()
         if not stats:
             return jsonify({'error': 'No stats found'}), 404
-        # Rename keys for frontend compatibility
         return jsonify({
             'total_vehicles': stats.get('total_records', 0),
             'active_parkings': stats.get('active_parkings', 0),
             'completed_parkings': stats.get('completed_parkings', 0),
-            'total_revenue': float(stats.get('total_revenue', 0)),
+            'total_revenue': "{:.2f}".format(float(stats.get('total_revenue', 0))).replace(',', '').replace('.', '.'),
             'avg_duration_minutes': float(stats.get('avg_duration_minutes', 0)),
             'today_entries': stats.get('today_entries', 0)
         })
