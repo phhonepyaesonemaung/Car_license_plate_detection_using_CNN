@@ -1,0 +1,36 @@
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: parking_db
+      MYSQL_USER: parking_user
+      MYSQL_PASSWORD: parking_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./special_project.session.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend:
+    build: .
+    container_name: backend_app
+    restart: always
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: parking_user
+      DB_PASSWORD: parking_pass
+      DB_NAME: parking_db
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    working_dir: /app/backend
+    command: ["python", "app.py"]
+
+volumes:
+  db_data:
